@@ -1,43 +1,60 @@
 import streamlit as st
 import numpy as np
-import cv2
 from PIL import Image
+import cv2
 import onnxruntime as ort
 
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Brain Tumor Detection")
+
 st.title("🧠 Brain Tumor Detection")
 
-# Load ONNX model
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    return ort.InferenceSession("model.onnx")
+    session = ort.InferenceSession("model.onnx")
+    return session
 
 session = load_model()
-input_name = session.get_inputs()[0].name
 
+input_name = session.get_inputs()[0].name
+output_name = session.get_outputs()[0].name
+
+# ---------------- IMAGE PREPROCESS ----------------
+def preprocess_image(image):
+    image = image.convert("L")        # grayscale
+    image = image.resize((150, 150))
+    image = np.array(image) / 255.0
+    image = image.astype(np.float32)
+
+    image = np.expand_dims(image, axis=0)   # (1,150,150)
+    image = np.expand_dims(image, axis=-1)  # (1,150,150,1)
+    image = np.repeat(image, 3, axis=-1)    # (1,150,150,3)
+
+    return image
+
+# ---------------- FILE UPLOAD ----------------
 uploaded_file = st.file_uploader(
     "Upload Brain MRI Image",
     type=["jpg", "jpeg", "png"]
 )
 
-def preprocess(image):
-    image = np.array(image)
-    image = cv2.resize(image, (150, 150))
-    image = image / 255.0
-    image = image.astype(np.float32)
-    image = np.expand_dims(image, axis=0)
-    return image
-
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    image = Image.open(uploaded_file)
 
-    img = preprocess(image)
-    output = session.run(None, {input_name: img})
-    pred = np.argmax(output[0])
-    confidence = np.max(output[0]) * 100
+    st.image(image, caption="Uploaded Image", width=350)
 
-    if pred == 1:
-        st.error(f"🧠 Tumor Detected ({confidence:.2f}%)")
+    input_tensor = preprocess_image(image)
+
+    # ---------------- PREDICTION ----------------
+    prediction = session.run(
+        [output_name],
+        {input_name: input_tensor}
+    )[0]
+
+    confidence = float(prediction[0][0])
+
+    if confidence > 0.5:
+        st.error(f"❌ Tumor Detected ({confidence*100:.2f}%)")
     else:
-        st.success(f"✅ No Tumor Detected ({confidence:.2f}%)")
+        st.success(f"✅ No Tumor Detected ({(1-confidence)*100:.2f}%)")
