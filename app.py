@@ -62,6 +62,7 @@ if uploaded_file is not None:
         st.success(f"✅ No Tumor Detected ({(1-confidence)*100:.2f}%)")
 
     # ---------- PRECAUTIONS ----------
+       # ---------- PRECAUTIONS ----------
     st.markdown("---")
     st.subheader("📝 Precautions & Health Tips")
 
@@ -83,4 +84,12 @@ if uploaded_file is not None:
         - Get **regular medical checkups**
         - If symptoms persist, consult a doctor
         """)
+
+    # ---------- DISCLAIMER ----------
+    st.markdown("---")
+    st.warning(
+        "⚠️ Disclaimer: This application is for educational purposes only. "
+        "It is not a medical diagnosis. Please consult a qualified doctor."
+    )
+
 
