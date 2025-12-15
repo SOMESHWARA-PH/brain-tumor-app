@@ -60,3 +60,27 @@ if uploaded_file is not None:
         st.error(f"❌ Tumor Detected ({confidence*100:.2f}%)")
     else:
         st.success(f"✅ No Tumor Detected ({(1-confidence)*100:.2f}%)")
+
+    # ---------- PRECAUTIONS ----------
+    st.markdown("---")
+    st.subheader("📝 Precautions & Health Tips")
+
+    if confidence > 0.5:
+        st.markdown("""
+        **⚠️ Tumor Detected – Suggested Precautions:**
+        - Consult a **neurologist or neurosurgeon immediately**
+        - Avoid stress and take **proper rest**
+        - Follow **MRI / CT scan** advice from doctor
+        - Do **not self-medicate**
+        - Maintain a **healthy diet**
+        """)
+    else:
+        st.markdown("""
+        **✅ No Tumor Detected – General Precautions:**
+        - Maintain a **healthy lifestyle**
+        - Stay **hydrated**
+        - Avoid excessive screen time
+        - Get **regular medical checkups**
+        - If symptoms persist, consult a doctor
+        """)
+
