@@ -4,6 +4,7 @@ from PIL import Image
 import cv2
 import onnxruntime as ort
 
+
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Brain Tumor Detection")
 
